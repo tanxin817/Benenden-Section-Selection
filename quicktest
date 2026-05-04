@@ -1,0 +1,284 @@
+index.html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="x5-fullscreen" content="true">
+    <meta name="x5-page-mode" content="app">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>智选未来：BBSG vs ISP 选校适配度自测</title>
+    <style>
+        :root {
+            --benenden-blue: rgb(0, 55, 103);
+            --benenden-green: rgb(193, 205, 35);
+        }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 15px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 25px 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .progress-bar {
+            height: 6px;
+            background: #eee;
+            border-radius: 3px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+        .progress-inner {
+            height: 100%;
+            background: var(--benenden-green);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        h2 {
+            color: var(--benenden-blue);
+            font-size: 20px;
+            margin-top: 0;
+            line-height: 1.4;
+        }
+        p.desc {
+            color: #666;
+            margin-bottom: 25px;
+            font-weight: 500;
+            font-size: 15px;
+        }
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .option-btn {
+            display: block;
+            width: 100%;
+            padding: 18px 16px;
+            border: 2px solid var(--benenden-blue);
+            border-radius: 12px;
+            background: #fff;
+            color: var(--benenden-blue);
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+        .option-btn:active {
+            background: var(--benenden-blue);
+            color: #fff;
+            transform: scale(0.98);
+        }
+        .result-box {
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.5s;
+        }
+        .res-tag {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: block;
+        }
+        .res-body {
+            text-align: left;
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid var(--benenden-blue);
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        .policy-alert {
+            border-left-color: #ff4d4f;
+            background-color: #fff2f0;
+        }
+        .contact-btn {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 14px 36px;
+            background: var(--benenden-blue);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 30px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="quiz-part">
+        <div class="progress-bar"><div class="progress-inner" id="progressBar"></div></div>
+        <h2 id="qTitle">加载中...</h2>
+        <p id="qDesc" class="desc"></p>
+        <div id="options" class="options-container"></div>
+    </div>
+
+    <div id="result-part" class="result-box">
+        <span class="res-tag" id="resTag"></span>
+        <div class="res-body" id="resBody"></div>
+        <a href="javascript:location.reload();" class="contact-btn" id="actionBtn">重新测试</a>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        {
+            title: "1. 升学路径",
+            desc: "关于未来的升学规划，您是否计划让孩子参加国内中考：",
+            options: [
+                { text: "是（明确计划参加，或希望保留国内中考灵活性）", val: "A" },
+                { text: "否（明确不参加中考，计划走纯国际教育路线）", val: "B" },
+                { text: "不确定", val: "C" }
+            ]
+        },
+        {
+            title: "2. 身份意向",
+            desc: "您对学生身份办理的意向：",
+            options: [
+                { text: "是（目前已具备海外身份或为海归人才子女，或愿意办理相关身份）", val: "A" },
+                { text: "否（目前不具备，且不打算办理海外身份）", val: "B" },
+                { text: "不确定", val: "C" }
+            ]
+        },
+        {
+            title: "3. 课程核心",
+            desc: "您是否希望在接轨国际的同时扎实保留中国基础？",
+            options: [
+                { text: "是（倾向中国国家课程融合国际元素，侧重母语学术认知）", val: "A" },
+                { text: "否（倾向国际课程融合中文及中国特色，侧重纯国际体系）", val: "B" },
+                { text: "不确定", val: "C" }
+            ]
+        },
+        {
+            title: "4. 教学语言",
+            desc: "您对课堂语言环境的期望：",
+            options: [
+                { text: "是（追求全英文沉浸式教学，接受更高强度的挑战）", val: "A" },
+                { text: "否（偏好中英双语协同，分层教学以打好英文基础）", val: "B" },
+                { text: "不确定", val: "C" }
+            ]
+        },
+        {
+            title: "5. 师资与社区",
+            desc: "您更偏好哪种校园文化氛围？",
+            options: [
+                { text: "是（偏好外教主导的、高度多元化的国际社区氛围）", val: "A" },
+                { text: "否（偏好中外教协同、以中国菁英家庭为主的氛围）", val: "B" },
+                { text: "不确定", val: "C" }
+            ]
+        },
+        {
+            title: "6. 规划目标",
+            desc: "您的长期教育路线是否已完全确定？",
+            options: [
+                { text: "是（明确唯一指向全球申请，目标海外顶尖名校）", val: "A" },
+                { text: "否（不确定，或希望根据孩子发展阶段动态调整）", val: "B" },
+                { text: "不确定", val: "C" }
+            ]
+        }
+    ];
+
+    let current = 0;
+    let answers = [];
+
+    function updateStep() {
+        const q = questions[current];
+        document.getElementById('qTitle').innerText = q.title;
+        document.getElementById('qDesc').innerText = q.desc;
+        document.getElementById('progressBar').style.width = ((current + 1) / questions.length * 100) + '%';
+        
+        const optionsDiv = document.getElementById('options');
+        optionsDiv.innerHTML = '';
+        q.options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt.text;
+            btn.onclick = () => handleSelect(opt.val);
+            optionsDiv.appendChild(btn);
+        });
+    }
+
+    function handleSelect(choice) {
+        answers.push(choice);
+        if (current < questions.length - 1) {
+            current++;
+            updateStep();
+        } else {
+            showResult();
+        }
+    }
+
+    function showResult() {
+        document.getElementById('quiz-part').style.display = 'none';
+        const resBox = document.getElementById('result-part');
+        const resTag = document.getElementById('resTag');
+        const resBody = document.getElementById('resBody');
+        const actionBtn = document.getElementById('actionBtn');
+        resBox.style.display = 'block';
+
+        if (answers.every(val => val === 'C')) {
+            resTag.innerText = "建议联系招生办进行 1对1 规划";
+            resTag.style.color = "rgb(0, 55, 103)";
+            resBody.innerHTML = "<b>专业的升学指导：</b><br>由于您目前对各方面的教育需求尚处于探索期，为了帮助您更清晰地规划孩子的教育蓝图，建议您尽快联系学校招生办。我们将为您提供专属的一对一升学规划服务，深度解读 BBSG 与 ISP 的差异，助力家庭做出最合适的选择。";
+            actionBtn.innerText = "立即预约一对一咨询";
+            return;
+        }
+
+        if (answers[0] === 'B' && answers[1] === 'B') {
+            resTag.innerText = "建议联系招生办进一步咨询";
+            resTag.style.color = "#ff4d4f";
+            resBody.className = "res-body policy-alert";
+            resBody.innerHTML = "<b>重要提示：</b><br>根据现行教育政策，中国籍学生升读高中阶段通常需要通过中考录取以获得国内学籍，或持有符合要求的海外身份以规划国际升学路径。由于您目前暂无相关规划，为了保障孩子的升学合规性与选择权，建议您尽快联系招生办进一步了解相关政策。";
+            actionBtn.innerText = "了解入学政策及学籍要求";
+            return;
+        }
+
+        if (answers[0] === 'A' || answers[1] === 'B') {
+            resTag.innerText = "建议选择 BBSG 双语部";
+            resTag.style.color = "rgb(0, 55, 103)";
+            resBody.innerHTML = "您的需求高度指向<b>双轨制保障</b>。BBSG提供中国国家课程融合国际元素的教育体系，既能让孩子接轨国际视野，又能通过中考体系保留国内升学的灵活性。";
+            return;
+        }
+
+        let ispScore = 0;
+        if (answers[3] === 'A') ispScore++;
+        if (answers[4] === 'A') ispScore++;
+        if (answers[5] === 'A') ispScore++;
+
+        if (ispScore >= 2 && answers[0] === 'B') {
+            resTag.innerText = "高度适配 ISP 国际部";
+            resTag.style.color = "rgb(193, 205, 35)";
+            resBody.innerHTML = "您的规划明确指向<b>纯国际教育路线</b>。ISP外教主导的学术环境、全英文沉浸式挑战以及多元国际社区文化，将为您孩子未来无缝衔接海外顶尖名校打下最强基础。";
+        } else {
+            resTag.innerText = "建议选择 BBSG 双语部";
+            resTag.style.color = "rgb(0, 55, 103)";
+            resBody.innerHTML = "您的家庭更倾向于在国际化环境中<b>保留扎实的母语基础</b>。BBSG的中外教协同模式、分层走班教学，能为您提供更具弹性的双语过渡空间。";
+        }
+    }
+
+    updateStep();
+</script>
+</body>
+</html>
